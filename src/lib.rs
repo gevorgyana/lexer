@@ -6,7 +6,7 @@ enum TokenType {
     Ident,
 }
 
-/// ASCII char is the only type of char allowed
+/// ASCII char, the only type of char allowed, by the way
 struct ASCIIChar {
     data : char,
 }
@@ -16,7 +16,7 @@ struct ASCIIChar {
 impl ASCIIChar {
     fn new(data : char) -> Option<Self> {
         if data.is_ascii() {
-            Option::Some(Self {data : data})
+            Option::Some(Self {data : data} )
         } else {
             Option::None
         }
@@ -26,30 +26,34 @@ impl ASCIIChar {
 /// DFA moves by accepting Input - this is very abstract
 pub trait DFA {
     type Input;
-    fn advance(&mut self);
+    fn advance(&mut self, input : Self::Input);
     fn can_terminate(&self) -> bool;
 }
 
-/// But here is an example, a multiline comment DFA, first of all
-/// it needs some state to know where it is at (transition_map)
+/// But here is an example, a multiline comment DFA.
+/// First of all t needs some state to know where it is at (transition_map)
 struct DFAMLComment {
     transition_map : HashMap<u8, u8>,
 }
 
-/// And it moves accordingly
+/// This is where we hardwire the logic of the automaton
+impl DFAMLComment {
+    fn new() -> Self {
+        Self {transition_map : HashMap::new() }
+    }
+}
+
+/// So that it moves accordingly to the transition map
 impl DFA for DFAMLComment {
 
     /// works with ASCII chars
     type Input = ASCIIChar;
-    fn advance(&mut self) {
+
+    fn advance(&mut self, input : Self::Input) {
 
     }
 
     fn can_terminate(&self) -> bool {
         false
     }
-}
-
-fn test() {
-    //let f = DFA {data  : 'f};
 }
