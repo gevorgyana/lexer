@@ -9,3 +9,4 @@ To build:
  - ```make test``` to run tests
 
 [1] https://www.haskell.org/onlinereport/haskell2010, 'Lexical structure'
+[2] https://github.com/StasDzundza/PythonLexer
