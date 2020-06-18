@@ -32,30 +32,22 @@ pub trait DFA {
     // this is a convertion, not eforced by the trait-impl relationship, in
     // general, there is no way to force the State to be a enum that has some
     // predefined values (Failed, Final, Initial), any object that implements this
-    // trait is able to even define the type on State to be an integer. Idn how to
+    // trait is able to even define the type of State to be an integer. Idn how to
     // enforce this with Rust...
     fn advance(&mut self, input : Self::Input);
 }
 
-/// But here is an example, a multiline comment DFA.
-/// First of all it needs some state to know where it is at and the rules to
-/// move forward - UPDATE - the rules are minimal, they are implemented in
-/// the advance() function, not hardcoded explicitly!!!
+/// Multiline comment DFA.
+/// It needs some state to know where it is at, the rules of transiton are defined
+/// later in the advance() method
 struct MLComment {
     state : <MLComment as DFA>::State,
 
-    // DO NOT DO THIS; an example of a huge waste of memory!
-    // (input, state) -> state
-    // transition_map : HashMap<(<MLComment as DFA>::Input, u8), u8>,
+    // Here is what I did earlier - the explicit table - of course this is not
+    // acceptable
+
+    /* transition_map : HashMap<(<MLComment as DFA>::Input, u8), u8>, */
 }
-
-// UPDATE! The dumbest thing to do is to explicitly define a lot of
-// transitions in a table; that is ugly and wastes memory; I can minimize the
-// automaton and have only a couple of states (I still need then though, for any
-// case where there are more than 1 character in a successful match) [1]!
-
-// UPDATE! Formally, the automata is not minimized [1], but in practice it is either
-// checking at runtime, or wasting memory; a small runtime check is not that bad.
 
 /// Some enumeration for multiline comment automaton
 enum MLCommentState {
@@ -65,10 +57,7 @@ enum MLCommentState {
     SawDashAfterOpenComm,
     SawClosingBracket,
     Final,
-    FailedMatch, // see the comment about grep vs lex; a match is failed at position i
-    // if there is no token of current type starting from i-th char in the input text
-    // other words, it is about automata that recognize token starting AT SOME PLACE,
-    // NOT the ones that look for them all over the source code
+    FailedMatch, // see the comment about grep vs lex in README;
 }
 
 impl MLComment {
@@ -78,15 +67,6 @@ impl MLComment {
         }
     }
 }
-
-/// IMPORTANT; how the lexer works; the main thing to notice here is that a DFA
-/// can in princtiple be used on the whole inupt stream, for example, like this:
-/// {/ dfdfdfdf {- -}
-/// here, the {/ is not matched against the beginning of the block of multiline
-/// comment, but initially I wanted to continue from that point, other words, I
-/// would move to the initial state and wait until {- arrives, then i would move
-/// to the state when one part of the pattern has matched, and finish when i saw
-/// -}; THIS IS HOW GREP WORKS! NOT HOW LEX WORKS! I NEED LEX-LIKE BEHAVIOUR
 
 impl DFA for MLComment {
 
