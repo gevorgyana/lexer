@@ -1,6 +1,11 @@
 Lexer for a subset of Haskell programming language.
-Run ```make```, then ```./app``` and pass the name of the file with Haskell source code.
-You will get the stream of token printed to stdout, which will contain the information
-about the location of each token in the source code.
 
-Also have a lot at the tests, they are in the ```./test``` dir
+Limitations:
+ - works with ASCII only
+ - the layout feature is not implemented [1]
+
+To build:
+ - ```make all```
+ - ```make test``` to run tests
+
+[1] https://www.haskell.org/onlinereport/haskell2010, 'Lexical structure'
