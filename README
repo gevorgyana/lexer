@@ -1,17 +1,22 @@
 Lexer for a subset of Haskell programming language.
 
 Important to know:
- - reading line by line because no token can span multiple lines,
+ - reading line by line is okay because no token can span multiple lines,
    the only tricky part is multiline comments, they must be handled by
    a simple DFA.
+ - using the maximal munch principle is okay and adviced by the Haskell 2010 report.
+   However, for demonstration purpose, the lexer panicks when it does not know
+   what token to produce, so that you do not get comfortable with it! :)
 
 Limitations:
- - works with ASCII only
+ - works with ASCII only (unicode is tricky)
  - the layout feature is not implemented [1]
 
-To build:
- - ```make all```
- - ```make test``` to run tests
+To build & test at the same time (this project is build as a library and it has no
+entry point by itself):
+- run ```cargo test```
 
-[1] https://www.haskell.org/onlinereport/haskell2010, 'Lexical structure'
+Inspired by this [2] Thanks to Stas Dzundza! :D
+
+[1] https://www.haskell.org/onlinereport/haskell2010, see section 'Lexical structure'
 [2] https://github.com/StasDzundza/PythonLexer
