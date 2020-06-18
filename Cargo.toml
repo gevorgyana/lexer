@@ -1,5 +1,5 @@
 [package]
-name = "haskell_proof_of_concept_lexer"
+name = "proof_of_concept_haskell_lexer"
 version = "0.1.0"
 authors = ["Artyom Gevorgyan <artemhevorhian@gmail.com>"]
 edition = "2018"
