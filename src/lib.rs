@@ -7,6 +7,7 @@ enum TokenType {
 }
 
 /// ASCII char, the only type of char allowed, by the way
+#[derive(Eq, Hash, PartialEq)]
 struct ASCIIChar {
     data : char,
 }
@@ -33,13 +34,19 @@ pub trait DFA {
 /// But here is an example, a multiline comment DFA.
 /// First of all t needs some state to know where it is at (transition_map)
 struct DFAMLComment {
-    transition_map : HashMap<u8, u8>,
+    transition_map : HashMap<<DFAMLComment as DFA>::Input, u8>,
 }
 
 /// This is where we hardwire the logic of the automaton
 impl DFAMLComment {
     fn new() -> Self {
-        Self {transition_map : HashMap::new() }
+        let mut transition_map = HashMap::new();
+        // - as long as it is ASCIIChar, the compiler will not argue, it knows
+        // that for DFAMLComment it is DFA::Input
+        // - safe to unwrap - these are clearly ascii characters
+        // - need to refactor - too verbose, will use macros
+        transition_map.insert(ASCIIChar::new('a').unwrap(), 1 as u8);
+        Self { transition_map : transition_map }
     }
 }
 
