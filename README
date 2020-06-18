@@ -4,7 +4,7 @@ Important to know:
  - reading line by line is okay because no token can span multiple lines,
    the only tricky part is multiline comments, they must be handled by
    a simple DFA.
- - using the maximal munch principle is okay and adviced by the Haskell 2010 report.
+ - using the maximal munch principle is okay and advised by the Haskell 2010 report.
    However, for demonstration purpose, the lexer panicks when it does not know
    what token to produce, so that you do not get comfortable with it! :)
 
@@ -12,7 +12,7 @@ Limitations:
  - works with ASCII only (unicode is tricky)
  - the layout feature is not implemented [1]
 
-To build & test at the same time (this project is build as a library and it has no
+To build & test at the same time (this project is built as a library and it has no
 entry point by itself):
 - run ```cargo test```
 

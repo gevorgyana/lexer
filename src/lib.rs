@@ -1,5 +1,6 @@
 use std::rc::Rc;
 use std::collections::HashMap;
+use std::fs;
 
 /// Token types
 enum TokenType {
@@ -32,25 +33,33 @@ pub trait DFA {
 }
 
 /// But here is an example, a multiline comment DFA.
-/// First of all t needs some state to know where it is at (transition_map)
+/// First of all it needs some state to know where it is at and the rules to
+/// move forward - UPDATE - the rules are minimal, they are implemented in
+/// the advance() function, not hardcoded explicitly!!!
 struct DFAMLComment {
-    transition_map : HashMap<<DFAMLComment as DFA>::Input, u8>,
+    state : u8,
+
+    // DO NOT DO THIS; an example of a huge waste of memory!
+    // (input, state) -> state
+    // transition_map : HashMap<(<DFAMLComment as DFA>::Input, u8), u8>,
 }
 
-/// This is where we hardwire the logic of the automaton
+// UPDATE! The dumbest thing to do is to explicitly define a lot of
+// transitions in a table; that is ugly and wastes memory; I can minimize the
+// automaton and have only a couple of states (I still need then though, for any
+// case where there are more than 1 character in a successful match) [1]!
+
+// UPDATE! Formally, the automata is not minimized [1], but in practice it is either
+// checking at runtime, or wasting memory; a small runtime check is not that bad
+
 impl DFAMLComment {
     fn new() -> Self {
-        let mut transition_map = HashMap::new();
-        // - as long as it is ASCIIChar, the compiler will not argue, it knows
-        // that for DFAMLComment it is DFA::Input
-        // - safe to unwrap - these are clearly ascii characters
-        // - need to refactor - too verbose, will use macros
-        transition_map.insert(ASCIIChar::new('a').unwrap(), 1 as u8);
-        Self { transition_map : transition_map }
+        Self {
+            state : 0
+        }
     }
 }
 
-/// So that it moves accordingly to the transition map
 impl DFA for DFAMLComment {
 
     /// works with ASCII chars
@@ -63,4 +72,9 @@ impl DFA for DFAMLComment {
     fn can_terminate(&self) -> bool {
         false
     }
+}
+
+fn test() {
+    // read the whole file into a string and move on from there
+    fs::read_to_string("test.hs");
 }
