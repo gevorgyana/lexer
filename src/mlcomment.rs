@@ -97,10 +97,12 @@ impl lexeme::Lexeme for MLComment {
 
     fn recognize(input : &str) -> Option<token::Token> {
         let mut rec = MLComment::new();
-        rec.advance(ascii::ASCIIChar::new('{').unwrap());
-        rec.advance(ascii::ASCIIChar::new('-').unwrap());
-        rec.advance(ascii::ASCIIChar::new('-').unwrap());
-        rec.advance(ascii::ASCIIChar::new('}').unwrap());
+        for character in input.chars() {
+            match ascii::ASCIIChar::new(character) {
+                Some(ascii_char) => { rec.advance(ascii_char) },
+                None => { panic!("Non-ascii character found") },
+            }
+        }
 
         if rec.in_final_state() {
             Some(token::Token {
