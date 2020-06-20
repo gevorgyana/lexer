@@ -4,6 +4,8 @@ use std::fs;
 mod mlcomment;
 mod ascii;
 mod dfa;
+mod token;
+mod lexeme;
 
 fn test() {
     // read the whole file into a string and move on from there
