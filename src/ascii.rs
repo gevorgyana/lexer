@@ -3,7 +3,7 @@ pub struct ASCIIChar {
 }
 
 impl ASCIIChar {
-    fn new(character : char) -> Option<Self> {
+    pub fn new(character : char) -> Option<Self> {
         if character.is_ascii() {
             Option::Some(Self {character : character} )
         } else {

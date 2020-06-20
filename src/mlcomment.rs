@@ -1,7 +1,9 @@
-use super::dfa;
-use super::ascii;
-use super::lexeme;
-use super::token;
+use crate::dfa;
+use crate::ascii;
+use crate::lexeme;
+use crate::token;
+
+use dfa::DFA;
 
 /// Multiline comment DFA.
 
@@ -92,9 +94,22 @@ impl dfa::DFA for MLComment {
 }
 
 impl lexeme::Lexeme for MLComment {
+
     fn recognize(input : &str) -> Option<token::Token> {
-        let rec = MLComment::new();
-        None
+        let mut rec = MLComment::new();
+        rec.advance(ascii::ASCIIChar::new('{').unwrap());
+        rec.advance(ascii::ASCIIChar::new('-').unwrap());
+        rec.advance(ascii::ASCIIChar::new('-').unwrap());
+        rec.advance(ascii::ASCIIChar::new('}').unwrap());
+
+        if rec.in_final_state() {
+            Some(token::Token {
+                token_type : token::TokenType::MLComment,
+                span : token::Span::SingleLine(4),
+            })
+        } else {
+            None
+        }
     }
 }
 
@@ -103,13 +118,12 @@ mod test {
     use super::*;
     use super::lexeme::Lexeme;
 
-
     #[test]
     fn lexeme() {
         assert_eq!(MLComment::recognize("{--}"),
                    Some (token::Token { token_type :
                                         token::TokenType::MLComment,
-                                        span : token::Span::SingleLine(1),
+                                        span : token::Span::SingleLine(4),
                                         }));
     }
 
