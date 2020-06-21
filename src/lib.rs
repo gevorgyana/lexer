@@ -8,6 +8,7 @@ mod token;
 mod lexeme;
 mod pda;
 mod driver;
+mod qvarid;
 
 fn test() {
     // read the whole file into a string and move on from there
