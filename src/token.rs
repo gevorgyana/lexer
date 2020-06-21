@@ -3,7 +3,7 @@ pub enum TokenType {
     Ident,
     MLComment,
     SLComment,
-    QVarId,
+    QConId,
 }
 
 #[derive(PartialEq, PartialOrd, Debug)]

@@ -8,7 +8,7 @@ use crate::lexeme::Lexeme;
 /// `program -> whitespace | lexeme`
 ///
 /// `whitespace -> whitestuff {whitestuff}
-/// `whitestuff -> whitechar | __comment__ | __mlcomment__
+/// `whitestuff -> whitechar | __comment__ | mlcomment
 /// `whitechar -> '\n' | '\r' | ' ' | '\t'
 ///
 /// `lexeme -> __qvarid__ | __qconid__ | __qvarsym__ | __qconsym__
@@ -28,7 +28,11 @@ fn gen_hs_token_stream(string_view : &str) -> Vec<token::Token>{
     // tab, form feed, any unicode char that represents whitespace)
     let whitechar = vec!['\n', '\r', '\t', ' '];
 
-    let lexemes = vec![mlcomment::MLComment::recognize];
+    let lexemes : Vec<fn(&str) -> Option::<token::Token>> = vec![
+        mlcomment::MLComment::recognize,
+        // reserved ops and ids go before qualified identifiers!
+        qconid::QConId::recognize,
+    ];
 
     while buffer_offset < string_view.len() {
 
@@ -65,6 +69,12 @@ mod test {
             {
                 span : vec![4],
                 token_type : token::TokenType::MLComment
+            }]);
+        assert_eq!(gen_hs_token_stream("F.F"), vec![
+            token::Token
+            {
+                span : vec![3],
+                token_type : token::TokenType::QConId,
             }]);
     }
 }
