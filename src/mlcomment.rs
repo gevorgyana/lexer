@@ -28,7 +28,8 @@ pub enum MLCommentState {
     SawOpeningBracket,
     SawOpenComm,
     SawDashAfterOpenComm,
-    SawClosingBracket,
+    //SawClosingBracket,
+    SawOpeningBracketInner,
     Final,
     FailedMatch,
 }
@@ -59,6 +60,10 @@ impl dfa::DFA for MLComment {
         let input = input.get_char();
         match (&mut self.state, &input) {
 
+            // Final/Failed
+            (Self::State::Final, char) => {
+                ()
+            }
             (Self::State::FailedMatch, char) => {
                 ()
             },
@@ -84,18 +89,32 @@ impl dfa::DFA for MLComment {
             (Self::State::SawOpenComm, '-') => {
                 self.state = Self::State::SawDashAfterOpenComm;
             },
+            (Self::State::SawOpenComm, '{') => {
+                self.state = Self::State::SawOpeningBracketInner;
+            },
             (Self::State::SawOpenComm, char) => {},
 
+            // SawDashAfterOpenComm -> *
             (Self::State::SawDashAfterOpenComm, '}') => {
-                self.stack -=1;
+                self.stack -= 1;
                 if self.stack == 0 {
                     self.state = Self::State::Final;
+                } else {
+                    self.state = Self::State::SawOpenComm;
                 }
             },
+            (Self::State::SawDashAfterOpenComm, char) => {
+                self.state = Self::State::SawOpenComm;
+            },
 
-            (Self::State::SawOpenComm, char) => {},
-
-            _ => (),
+            // SawOpeningBracketInner -> *
+            (Self::State::SawOpeningBracketInner, '-') => {
+                self.stack += 1;
+                self.state = Self::State::SawOpenComm;
+            },
+            (Self::State::SawOpeningBracketInner, char) => {
+                self.state = Self::State::SawOpenComm;
+            },
         }
     }
 }
@@ -173,6 +192,13 @@ mod test {
                          token::TokenType::MLComment,
                          span : token::Span::SingleLine(14),
                        }));
-    }
 
+        assert_eq!(MLComment::recognize("{-{--}-}"),
+                   Some (
+                       token::Token
+                       { token_type :
+                         token::TokenType::MLComment,
+                         span : token::Span::SingleLine(8),
+                       }));
+    }
 }
