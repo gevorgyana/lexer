@@ -123,41 +123,36 @@ impl lexeme::Lexeme for MLComment {
 
     fn recognize(input : &str) -> Option<token::Token> {
         let mut rec = MLComment::new();
-        let mut nlines = 0;
-        let mut beg_cols = 0;
-        let mut end_cols = 0;
+        let mut cols_in_curr_line = 0;
+        let mut lines_span : Vec<u8> = vec![];
 
         for character in input.chars() {
             match ascii::ASCIIChar::new(character) {
                 Some(ascii_char) => {
                     match ascii_char.get_char() {
                         '\n' => {
-                            nlines += 1;
-                            end_cols = 0
-                        }
+                            lines_span.push(cols_in_curr_line);
+                            cols_in_curr_line = 0;
+                        },
                         _ => {
-                            if (nlines > 0) {
-                                end_cols += 1
-                            } else {
-                                beg_cols += 1
-                            }
-                        }
+                            cols_in_curr_line += 1;
+                        },
                     }
+
+                    // if it is in a final state but there is still more
+                    // to see? should not happen when the stack is 0, so what
+                    // is after another opening bracket is another token
+
                     rec.advance(ascii_char);
                     if rec.in_final_state() {
-                        let span : token::Span;
-                        if (nlines > 0) {
-                            span = token::Span::Multiline(beg_cols,
-                                                          nlines - 1,
-                                                          end_cols);
-                        } else {
-                            span = token::Span::SingleLine(beg_cols);
-                        }
+
+                        // do not forget the last line
+                        lines_span.push(cols_in_curr_line);
 
                         return Some(token::Token
                                     { token_type :
                                       token::TokenType::MLComment,
-                                      span : span,
+                                      span : lines_span,
                                     }) // ! -> ()
                     } else if rec.in_fail_state() {
                         return None // ! -> ()
@@ -184,7 +179,7 @@ mod test {
                        token::Token
                        { token_type :
                          token::TokenType::MLComment,
-                         span : token::Span::SingleLine(4),
+                         span : vec![4],
                        }));
 
         assert_eq!(MLComment::recognize("{-dfasdfasdf-}"),
@@ -192,7 +187,7 @@ mod test {
                        token::Token
                        { token_type :
                          token::TokenType::MLComment,
-                         span : token::Span::SingleLine(14),
+                         span : vec![14],
                        }));
 
         assert_eq!(MLComment::recognize("{-{--}-}"),
@@ -200,14 +195,17 @@ mod test {
                        token::Token
                        { token_type :
                          token::TokenType::MLComment,
-                         span : token::Span::SingleLine(8),
+                         span : vec![8],
                        }));
+
+
         assert_eq!(MLComment::recognize("{-\n{--}-}"),
                    Some (
                        token::Token
                        { token_type :
                          token::TokenType::MLComment,
-                         span : token::Span::Multiline(2, 0, 6),
+                         span : vec![2, 6],
                        }));
+
     }
 }
