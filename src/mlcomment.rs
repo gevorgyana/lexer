@@ -147,7 +147,9 @@ impl lexeme::Lexeme for MLComment {
                     if rec.in_final_state() {
                         let span : token::Span;
                         if (nlines > 0) {
-                            span = token::Span::Multiline(beg_cols, nlines, end_cols);
+                            span = token::Span::Multiline(beg_cols,
+                                                          nlines - 1,
+                                                          end_cols);
                         } else {
                             span = token::Span::SingleLine(beg_cols);
                         }
@@ -199,6 +201,13 @@ mod test {
                        { token_type :
                          token::TokenType::MLComment,
                          span : token::Span::SingleLine(8),
+                       }));
+        assert_eq!(MLComment::recognize("{-\n{--}-}"),
+                   Some (
+                       token::Token
+                       { token_type :
+                         token::TokenType::MLComment,
+                         span : token::Span::Multiline(2, 0, 6),
                        }));
     }
 }
