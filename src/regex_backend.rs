@@ -13,14 +13,17 @@ where
 {
     // using err here because it allows to express the reason for failing
     fn recognize(input : &str) -> Result<token::Token, &'static str> {
-        // todo instead of unwrapping, implement error handling
-        let matcher = regex::Regex::new(Self::expression())
-            .unwrap();
 
+        // early return, in case of invalid regex
+        if let Err(e) = regex::Regex::new(Self::expression()) {
+            return Err("Cannot compile regex.")
+        }
+
+        let matcher = regex::Regex::new(Self::expression()).unwrap();
         match matcher.find(input) {
             Some(position) => {
                 if (position.start() > 0) {
-                    Err("")
+                    Err("There is a match, but it is far away.")
                 } else {
                     Ok (
                         token::Token {
@@ -35,7 +38,7 @@ where
                 }
             },
             None => {
-                Err("")
+                Err("No match at all.")
             }
         }
     }

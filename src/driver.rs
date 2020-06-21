@@ -30,7 +30,8 @@ fn gen_hs_token_stream(string_view : &str) -> Vec<token::Token>{
 
     let lexemes : Vec<fn(&str) -> Result::<token::Token, &'static str>> = vec![
         mlcomment::MLComment::recognize,
-        // reserved ops and ids go before qualified identifiers!
+        reserved::ReservedId::recognize,
+        reserved::ReservedOp::recognize,
         qconid::QConId::recognize,
     ];
 
@@ -70,6 +71,9 @@ mod test {
                 span : vec![4],
                 token_type : token::TokenType::MLComment
             }]);
+    }
+    #[test]
+    fn qconid() {
         assert_eq!(gen_hs_token_stream("F.F"), vec![
             token::Token
             {
