@@ -1,4 +1,5 @@
 use crate::dfa;
+use crate::pda;
 use crate::ascii;
 use crate::lexeme;
 use crate::token;
@@ -9,12 +10,14 @@ use dfa::DFA;
 
 pub struct MLComment {
     state : MLCommentState,
+    stack : u8,
 }
 
 impl MLComment {
     fn new() -> Self {
         Self {
-            state : MLCommentState::Initial
+            state : MLCommentState::Initial,
+            stack : 0,
         }
     }
 }
@@ -28,6 +31,10 @@ pub enum MLCommentState {
     SawClosingBracket,
     Final,
     FailedMatch,
+}
+
+impl pda::PDA for MLComment {
+    type Stack = u8;
 }
 
 impl dfa::DFA for MLComment {
@@ -47,13 +54,13 @@ impl dfa::DFA for MLComment {
     }
 
     // this implicitly implements the transition table as all DFAs do
+    // and uses a stack for detecting correct bracket sequences
     fn advance(&mut self, input : Self::Input) {
         let input = input.get_char();
         match (&mut self.state, &input) {
 
-            // special case
             (Self::State::FailedMatch, char) => {
-                () // nothing happens, we have already failed
+                ()
             },
 
             // Initial -> *
@@ -67,6 +74,7 @@ impl dfa::DFA for MLComment {
             // SawOpeningBracket -> *
             (Self::State::SawOpeningBracket, '-') => {
                 self.state = Self::State::SawOpenComm;
+                self.stack += 1;
             },
             (Self::State::SawOpeningBracket, char) => {
                 self.state = Self::State::FailedMatch;
@@ -76,17 +84,16 @@ impl dfa::DFA for MLComment {
             (Self::State::SawOpenComm, '-') => {
                 self.state = Self::State::SawDashAfterOpenComm;
             },
-            (Self::State::SawOpenComm, char) => {
-                // the comment has started, we cannot fail given valid input
+            (Self::State::SawOpenComm, char) => {},
+
+            (Self::State::SawDashAfterOpenComm, '}') => {
+                self.stack -=1;
+                if self.stack == 0 {
+                    self.state = Self::State::Final;
+                }
             },
 
-            // SawDashafterOpenComm
-            (Self::State::SawDashAfterOpenComm, '}') => {
-                self.state = Self::State::Final;
-            },
-            (Self::State::SawOpenComm, char) => {
-                // the comment has started, we cannot fail given valid input
-            },
+            (Self::State::SawOpenComm, char) => {},
 
             _ => (),
         }
@@ -97,21 +104,50 @@ impl lexeme::Lexeme for MLComment {
 
     fn recognize(input : &str) -> Option<token::Token> {
         let mut rec = MLComment::new();
+        let mut nlines = 0;
+        let mut beg_cols = 0;
+        let mut end_cols = 0;
+
         for character in input.chars() {
             match ascii::ASCIIChar::new(character) {
-                Some(ascii_char) => { rec.advance(ascii_char) },
+                Some(ascii_char) => {
+                    match ascii_char.get_char() {
+                        '\n' => {
+                            nlines += 1;
+                            end_cols = 0
+                        }
+                        _ => {
+                            if (nlines > 0) {
+                                end_cols += 1
+                            } else {
+                                beg_cols += 1
+                            }
+                        }
+                    }
+                    rec.advance(ascii_char);
+                    if rec.in_final_state() {
+                        let span : token::Span;
+                        if (nlines > 0) {
+                            span = token::Span::Multiline(beg_cols, nlines, end_cols);
+                        } else {
+                            span = token::Span::SingleLine(beg_cols);
+                        }
+
+                        return Some(token::Token
+                                    { token_type :
+                                      token::TokenType::MLComment,
+                                      span : span,
+                                    }) // ! -> ()
+                    } else if rec.in_fail_state() {
+                        return None // ! -> ()
+                    }
+                },
                 None => { panic!("Non-ascii character found") },
             }
         }
 
-        if rec.in_final_state() {
-            Some(token::Token {
-                token_type : token::TokenType::MLComment,
-                span : token::Span::SingleLine(4),
-            })
-        } else {
-            None
-        }
+        // no token has been recognized
+        None
     }
 }
 
@@ -123,10 +159,20 @@ mod test {
     #[test]
     fn lexeme() {
         assert_eq!(MLComment::recognize("{--}"),
-                   Some (token::Token { token_type :
-                                        token::TokenType::MLComment,
-                                        span : token::Span::SingleLine(4),
-                                        }));
+                   Some (
+                       token::Token
+                       { token_type :
+                         token::TokenType::MLComment,
+                         span : token::Span::SingleLine(4),
+                       }));
+
+        assert_eq!(MLComment::recognize("{-dfasdfasdf-}"),
+                   Some (
+                       token::Token
+                       { token_type :
+                         token::TokenType::MLComment,
+                         span : token::Span::SingleLine(14),
+                       }));
     }
 
 }

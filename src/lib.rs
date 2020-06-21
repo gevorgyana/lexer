@@ -6,6 +6,7 @@ mod ascii;
 mod dfa;
 mod token;
 mod lexeme;
+mod pda;
 
 fn test() {
     // read the whole file into a string and move on from there
