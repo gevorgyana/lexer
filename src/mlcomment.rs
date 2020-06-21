@@ -121,7 +121,7 @@ impl dfa::DFA for MLComment {
 
 impl lexeme::Lexeme for MLComment {
 
-    fn recognize(input : &str) -> Option<token::Token> {
+    fn recognize(input : &str) -> Result<token::Token, &'static str> {
         let mut rec = MLComment::new();
         let mut cols_in_curr_line = 0;
         let mut lines_span : Vec<u16> = vec![];
@@ -149,13 +149,13 @@ impl lexeme::Lexeme for MLComment {
                         // do not forget the last line
                         lines_span.push(cols_in_curr_line);
 
-                        return Some(token::Token
+                        return Ok(token::Token
                                     { token_type :
                                       token::TokenType::MLComment,
                                       span : lines_span,
                                     }) // ! -> ()
                     } else if rec.in_fail_state() {
-                        return None // ! -> ()
+                        return Err("") // ! -> ()
                     }
                 },
                 None => { panic!("Non-ascii character found") },
@@ -163,7 +163,7 @@ impl lexeme::Lexeme for MLComment {
         }
 
         // no token has been recognized
-        None
+        Err("")
     }
 }
 
@@ -175,7 +175,7 @@ mod test {
     #[test]
     fn lexeme() {
         assert_eq!(MLComment::recognize("{--}"),
-                   Some (
+                   Ok (
                        token::Token
                        { token_type :
                          token::TokenType::MLComment,
@@ -183,7 +183,7 @@ mod test {
                        }));
 
         assert_eq!(MLComment::recognize("{-dfasdfasdf-}"),
-                   Some (
+                   Ok (
                        token::Token
                        { token_type :
                          token::TokenType::MLComment,
@@ -191,7 +191,7 @@ mod test {
                        }));
 
         assert_eq!(MLComment::recognize("{-{--}-}"),
-                   Some (
+                   Ok (
                        token::Token
                        { token_type :
                          token::TokenType::MLComment,
@@ -200,7 +200,7 @@ mod test {
 
 
         assert_eq!(MLComment::recognize("{-\n{--}-}"),
-                   Some (
+                   Ok (
                        token::Token
                        { token_type :
                          token::TokenType::MLComment,

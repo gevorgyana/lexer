@@ -3,6 +3,8 @@ pub enum TokenType {
     Ident,
     MLComment,
     SLComment,
+    ReservedId,
+    ReservedOp,
     QConId,
 }
 

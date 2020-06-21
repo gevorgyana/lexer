@@ -9,6 +9,8 @@ mod lexeme;
 mod pda;
 mod driver;
 mod qconid;
+mod reserved;
+mod regex_backend;
 
 fn test() {
     // read the whole file into a string and move on from there

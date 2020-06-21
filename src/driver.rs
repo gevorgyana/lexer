@@ -28,7 +28,7 @@ fn gen_hs_token_stream(string_view : &str) -> Vec<token::Token>{
     // tab, form feed, any unicode char that represents whitespace)
     let whitechar = vec!['\n', '\r', '\t', ' '];
 
-    let lexemes : Vec<fn(&str) -> Option::<token::Token>> = vec![
+    let lexemes : Vec<fn(&str) -> Result::<token::Token, &'static str>> = vec![
         mlcomment::MLComment::recognize,
         // reserved ops and ids go before qualified identifiers!
         qconid::QConId::recognize,
@@ -43,7 +43,7 @@ fn gen_hs_token_stream(string_view : &str) -> Vec<token::Token>{
         }
 
         for recognizer in &lexemes {
-            if let Some(token) = recognizer(&string_view[buffer_offset..]) {
+            if let Ok(token) = recognizer(&string_view[buffer_offset..]) {
                 // todo no cast?
                 buffer_offset += token.span.iter()
                     .fold(token.span.len() - 1, |sum, x| sum + *x as usize);
