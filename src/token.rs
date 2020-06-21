@@ -7,6 +7,6 @@ pub enum TokenType {
 
 #[derive(PartialEq, PartialOrd, Debug)]
 pub struct Token {
-    pub span : Vec<u8>,
+    pub span : Vec<u16>,
     pub token_type : TokenType,
 }

@@ -124,7 +124,7 @@ impl lexeme::Lexeme for MLComment {
     fn recognize(input : &str) -> Option<token::Token> {
         let mut rec = MLComment::new();
         let mut cols_in_curr_line = 0;
-        let mut lines_span : Vec<u8> = vec![];
+        let mut lines_span : Vec<u16> = vec![];
 
         for character in input.chars() {
             match ascii::ASCIIChar::new(character) {
