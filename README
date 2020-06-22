@@ -3,11 +3,11 @@ Lexer for a subset of Haskell programming language.
 Important to know:
  - reading line by line is okay because no token can span multiple lines,
    the only tricky part is multiline comments, they must be handled by
-   a simple DFA.
+   a pushdown automata (PDA).
  - using the maximal munch principle is okay and advised by the Haskell 2010 report.
    However, for demonstration purpose, the lexer panicks when it does not know
    what token to produce, so that you do not get comfortable with it! :)
- - notice that a DFA can in princtiple be used on the whole input stream, for example,
+ - DFA can in princtiple be used on the whole input stream, for example,
    take this line:
      {/ dfdfdfdf {- -}
    here, the `{/` is not matched against the beginning of the block of multiline
