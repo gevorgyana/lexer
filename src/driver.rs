@@ -11,7 +11,7 @@ use crate::lexeme::Lexeme;
 /// `whitestuff -> whitechar | __comment__ | mlcomment
 /// `whitechar -> '\n' | '\r' | ' ' | '\t'
 ///
-/// `lexeme -> __qvarid__ | qconid | __qvarsym__ | __qconsym__
+/// `lexeme -> qvarid | qconid | __qvarsym__ | __qconsym__
 ///          | __literal__ | __special__ | reservedop | reservedid
 
 fn gen_hs_token_stream(string_view : &str) -> Vec<token::Token>{
@@ -34,7 +34,8 @@ fn gen_hs_token_stream(string_view : &str) -> Vec<token::Token>{
         mlcomment::MLComment::recognize,
         reserved::ReservedId::recognize,
         reserved::ReservedOp::recognize,
-        qconid::QConId::recognize,
+        qualified_identifiers::QConId::recognize,
+        qualified_identifiers::QVarId::recognize,
     ];
 
     while buffer_offset < string_view.len() {
@@ -65,6 +66,10 @@ fn gen_hs_token_stream(string_view : &str) -> Vec<token::Token>{
 #[cfg(test)]
 mod test {
     use super::*;
+
+    // TODO need to test for EVERY LEXEME IN SEPARATION !!! THERE ARE BUGS ALREADY,
+    // AND THERE WILL BE MORE
+
     #[test]
     fn mlcomment() {
         assert_eq!(gen_hs_token_stream("{--}"), vec![

@@ -8,7 +8,7 @@ mod token;
 mod lexeme;
 mod pda;
 mod driver;
-mod qconid;
+mod qualified_identifiers;
 mod reserved;
 mod regex_backend;
 
