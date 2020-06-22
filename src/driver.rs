@@ -2,8 +2,7 @@ use crate::*;
 use crate::lexeme::Lexeme;
 
 /// Generates Haskell token stream, uses a string view on the source code.
-/// Operates on the top-level lexemes. These '__lexemes__' are handled at
-/// other levels.
+/// Operates on the top-level lexemes. These '__lexemes__' are not implemented.
 /// ---- Rules covered at this scope ----
 /// `program -> whitespace | lexeme`
 ///
@@ -11,8 +10,8 @@ use crate::lexeme::Lexeme;
 /// `whitestuff -> whitechar | __comment__ | mlcomment
 /// `whitechar -> '\n' | '\r' | ' ' | '\t'
 ///
-/// `lexeme -> qvarid | qconid | __qvarsym__ | __qconsym__
-///          | __literal__ | __special__ | reservedop | reservedid
+/// `lexeme -> qvarid | qconid | qvarsym | qconsym
+///          | __literal__ | special | reservedop | reservedid
 
 fn gen_hs_token_stream(string_view : &str) -> Vec<token::Token>{
     // return value
@@ -28,14 +27,19 @@ fn gen_hs_token_stream(string_view : &str) -> Vec<token::Token>{
     // tab, form feed, any unicode char that represents whitespace)
     let whitechar = vec!['\n', '\r', '\t', ' '];
 
+    // these are single characters, makes sense to check them here
+    let special = vec!['|', ',', ';', '[', ']', '`', '{', '}'];
+
     let lexemes : Vec<fn(&str) -> Result::<token::Token, &'static str>> = vec![
         // todo rethink the grammar one more time, esp. how identifiers exclude
-        // reserved ids and ops
+        // reserved ids and ops - seems okay but ?
         mlcomment::MLComment::recognize,
         reserved::ReservedId::recognize,
         reserved::ReservedOp::recognize,
         qualified_identifiers::QConId::recognize,
         qualified_identifiers::QVarId::recognize,
+        qualified_identifiers::QVarSym::recognize,
+        qualified_identifiers::QConSym::recognize,
     ];
 
     while buffer_offset < string_view.len() {
@@ -46,8 +50,16 @@ fn gen_hs_token_stream(string_view : &str) -> Vec<token::Token>{
             continue
         }
 
+        if special.contains(&string_view.chars().nth(buffer_offset).unwrap()) {
+            token_stream.push(token::Token { span : vec![1],
+                                             token_type : token::TokenType::Special
+            });
+            continue
+        }
+
         for recognizer in &lexemes {
             if let Ok(token) = recognizer(&string_view[buffer_offset..]) {
+                // todo maximal munch!
                 // todo no cast?
                 buffer_offset += token.span.iter()
                     .fold(token.span.len() - 1, |sum, x| sum + *x as usize);
