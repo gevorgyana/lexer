@@ -6,6 +6,7 @@ pub enum TokenType {
     ReservedId,
     ReservedOp,
     QConId,
+    QVarId,
 }
 
 #[derive(PartialEq, PartialOrd, Debug)]

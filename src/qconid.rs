@@ -2,12 +2,23 @@ use crate::token;
 use crate::lexeme;
 use crate::regex_backend;
 
+use std::convert::TryInto;
+use crate::regex_backend::RegexLexeme;
+
 pub struct QConId {}
 
+impl regex_backend::SelfContained for QConId {}
+
+pub struct QVarId {}
+
 /// ---- Rules ----
-/// qvarid -> [modid .] conid
-/// modid -> {conid .} conid
+/// qconid -> [modid .] conid
 /// conid -> LARGE {SMALL | LARGE | DIGIT | '}
+///
+/// qvarid -> [modid .] varid
+/// varid -> ( SMALL {SMALL | LARGE | DIGIT | '} ) / reservedid
+///
+/// modid -> {conid .} conid
 
 impl regex_backend::RegexLexeme for QConId {
     fn expression() -> &'static str {
@@ -18,6 +29,49 @@ impl regex_backend::RegexLexeme for QConId {
     }
 }
 
+/// to make this lexeme self-contained, it is necessary to check if it
+/// tried to lex a reserved keyword; it is not possible to express this
+/// requirement in a regular experssion, therefore I chose to override
+/// the provided blanket implementation for the Lexeme trait
+impl regex_backend::RegexLexeme for QVarId {
+    fn expression() -> &'static str {
+        r"(([a-z][A-Za-z0-9']*\.)*[A-Z][A-Za-z0-9']*\.)?[A-Z][A-Za-z0-9']*"
+    }
+    fn token_type() -> token::TokenType {
+        token::TokenType::QVarId
+    }
+}
+
+impl lexeme::Lexeme for QVarId {
+    fn recognize(input : &str) -> Result<token::Token, &'static str> {
+        let reserved_id = vec!["case", "class", "data",
+                               "default", "deriving", "do",
+                               "else", "foreign", "if", "import",
+                               "in", "infix", "infixl", "infixr",
+                               "instance", "let", "module", "newtype",
+                               "of", "then", "type", "where"];
+
+        if let Ok(position) = <Self as regex_backend::RegexLexeme>::recognize_raw_match(input) {
+            if reserved_id.contains(&position.as_str()) {
+                Err("QVarId is not allowed to collide with reserved_id")
+            } else {
+                Ok(
+                    token::Token {
+                        span : vec![
+                            (position.end() -
+                             position.start())
+                                .try_into()
+                                .unwrap()],
+                        token_type : Self::token_type(),
+                    }
+                )
+
+            }
+        } else {
+            Err("Intercepted recognizer for QVarId failed")
+        }
+    }
+}
 
 #[cfg(test)]
 mod test {
@@ -25,7 +79,7 @@ mod test {
     use crate::lexeme::Lexeme;
 
     #[test]
-    fn lexeme() {
+    fn qconid() {
         // todo remove unwraps, use Ok() and Err()
         let res = QConId::recognize("A.F").unwrap();
         assert_eq!(res.span, vec![3]);

@@ -11,8 +11,8 @@ use crate::lexeme::Lexeme;
 /// `whitestuff -> whitechar | __comment__ | mlcomment
 /// `whitechar -> '\n' | '\r' | ' ' | '\t'
 ///
-/// `lexeme -> __qvarid__ | __qconid__ | __qvarsym__ | __qconsym__
-///          | __literal__ | __special__ | __reservedop__ | __reservedid__
+/// `lexeme -> __qvarid__ | qconid | __qvarsym__ | __qconsym__
+///          | __literal__ | __special__ | reservedop | reservedid
 
 fn gen_hs_token_stream(string_view : &str) -> Vec<token::Token>{
     // return value
@@ -29,6 +29,8 @@ fn gen_hs_token_stream(string_view : &str) -> Vec<token::Token>{
     let whitechar = vec!['\n', '\r', '\t', ' '];
 
     let lexemes : Vec<fn(&str) -> Result::<token::Token, &'static str>> = vec![
+        // todo rethink the grammar one more time, esp. how identifiers exclude
+        // reserved ids and ops
         mlcomment::MLComment::recognize,
         reserved::ReservedId::recognize,
         reserved::ReservedOp::recognize,
