@@ -32,6 +32,7 @@ mod test {
     use super::*;
     use crate::lexeme::Lexeme;
 
+    /*
     #[test]
     fn lexeme_reserved_id() {
         let res = ReservedId::recognize("case").unwrap();
@@ -46,4 +47,5 @@ mod test {
                       { span : vec![1],
                         token_type : token::TokenType::ReservedOp}))
     }
+     */
 }

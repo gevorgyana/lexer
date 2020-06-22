@@ -1,30 +1,46 @@
-use regex;
 use super::*;
+
+use regex;
 use std::convert::TryInto;
 
+#[derive(Debug, PartialEq)]
+pub enum RegexLexemeErr {
+    NoMatch,
+    DistantMatch,
+    InvalidExpression,
+    LexemeNotAllowed,
+}
+
 pub trait RegexLexeme {
+
+    // settings
+
+    /// activates the usage of except_for() filtering, false by default
     fn needs_filtering() -> bool { false }
-    fn except_from_these_words() -> Vec<&'static str> { vec![] }
+    /// a regular expression that defines the matches that must be avoided
+    fn except_for() -> &'static str { r"" }
     fn token_type() -> token::TokenType;
+    /// a regular expression that defines the matches that should be reported
     fn expression() -> &'static str;
-    fn recognize_raw_match(input : &str) -> Result<regex::Match, &'static str> {
 
-        // early return, in case of invalid regex
-        if let Err(e) = regex::Regex::new(Self::expression()) {
-            return Err("Cannot compile regex.")
-        }
-
-        let matcher = regex::Regex::new(Self::expression()).unwrap();
-        match matcher.find(input) {
-            Some(position) => {
-                if (position.start() > 0) {
-                    Err("There is a match, but it is far away.")
-                } else {
-                    Ok (position)
-                }
+    fn recognize_raw_match(input : &str) -> Result<regex::Match, RegexLexemeErr> {
+        match regex::Regex::new(Self::expression()) {
+            Err(e) => {
+                Err(RegexLexemeErr::InvalidExpression)
             },
-            None => {
-                Err("No match at all.")
+            Ok(matcher) => {
+                match matcher.find(input) {
+                    Some(position) => {
+                        if (position.start() > 0) {
+                            Err(RegexLexemeErr::DistantMatch)
+                        } else {
+                            Ok(position)
+                        }
+                    },
+                    None => {
+                        Err(RegexLexemeErr::NoMatch)
+                    }
+                }
             }
         }
     }
@@ -33,17 +49,18 @@ pub trait RegexLexeme {
 impl<T> lexeme::Lexeme for T
 where T : RegexLexeme
 {
-    // using err here because it allows to express the reason for failing
-    fn recognize(input : &str) -> Result<token::Token, &'static str> {
+    fn recognize(input : &str) -> Result<token::Token, lexeme::LexemeErr> {
         if <Self as RegexLexeme>::needs_filtering() {
             let reserved_id = <Self as RegexLexeme>
-                ::except_from_these_words();
+                ::except_for();
 
             if let Ok(position) = <Self as regex_backend::RegexLexeme>
                 ::recognize_raw_match(input) {
 
                 if reserved_id.contains(&position.as_str()) {
-                    Err("QVarId is not allowed to collide with reserved_id")
+                    Err(lexeme::LexemeErr::RegexErr(
+                        RegexLexemeErr::LexemeNotAllowed
+                    ))
                 } else {
                     Ok(
                         token::Token {
@@ -57,7 +74,7 @@ where T : RegexLexeme
                     )
                 }
             } else {
-                Err("Filtering recognizer failed")
+                Err(lexeme::LexemeErr::RegexErr(RegexLexemeErr::NoMatch))
             }
         } else {
             match <Self as RegexLexeme>::recognize_raw_match(input) {
@@ -74,7 +91,7 @@ where T : RegexLexeme
                     )
                 },
                 Err(reason) => {
-                    Err(reason)
+                    Err(lexeme::LexemeErr::RegexErr(reason))
                 }
             }
         }

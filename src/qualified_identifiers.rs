@@ -37,13 +37,16 @@ impl regex_backend::RegexLexeme for QVarId {
 
     fn needs_filtering() -> bool { true }
 
-    fn except_from_these_words() -> Vec<&'static str> {
+    fn except_for() -> &'static str {
+        /*
         vec!["case", "class", "data",
              "default", "deriving", "do",
              "else", "foreign", "if", "import",
              "in", "infix", "infixl", "infixr",
              "instance", "let", "module", "newtype",
              "of", "then", "type", "where"]
+         */
+        r""
     }
 
     fn expression() -> &'static str {
@@ -61,11 +64,14 @@ impl regex_backend::RegexLexeme for QVarSym {
 
     fn needs_filtering() -> bool { true }
 
-    fn except_from_these_words() -> Vec<&'static str> {
+    fn except_for() -> &'static str {
+        /*
         vec![
             r"--", // this is a dirty trick, I need a regex for representing dashes
             r"..", r":", r"::", r"=", r"\", r"|", r"<-", r"->", r"@", r"~", r"=>"
         ]
+         */
+        r""
     }
 
     fn expression() -> &'static str {
@@ -83,11 +89,14 @@ impl regex_backend::RegexLexeme for QConSym {
 
     fn needs_filtering() -> bool { true }
 
-    fn except_from_these_words() -> Vec<&'static str> {
+    fn except_for() -> &'static str {
+        /*
         vec![
             r"--", // this is a dirty trick, I need a regex for representing dashes
             r"..", r":", r"::", r"=", r"\", r"|", r"<-", r"->", r"@", r"~", r"=>"
         ]
+         */
+        r""
     }
 
     fn expression() -> &'static str {
@@ -112,7 +121,8 @@ mod test {
         let res = QConId::recognize("A.F.f").unwrap();
         assert_eq!(res.span, vec![3]); // 3, not 5!
         let res = QConId::recognize(".");
-        assert_eq!(res, Err("No match at all.")); // 3, not 5!
+        assert_eq!(res, Err (lexeme::LexemeErr::RegexErr
+                             (regex_backend::RegexLexemeErr::NoMatch)));
         let res = QConId::recognize("A'.F'.f").unwrap();
         assert_eq!(res.span, vec![5]);
         let res = QConId::recognize("Aa2'.F2f'.f22").unwrap();
@@ -120,12 +130,14 @@ mod test {
 
         // examples from the report (2.4 Identifiers and Operators)
         let res = QConId::recognize("f.g");
-        assert_eq!(res, Err("No match at all."));
+        assert_eq!(res, Err (lexeme::LexemeErr::RegexErr
+                             (regex_backend::RegexLexemeErr::NoMatch)));
         let res = QConId::recognize("F.g").unwrap();
         assert_eq!(res.span, vec![1]); // F, g is small, so the
         // expression is not qconid!
         let res = QConId::recognize("f..");
-        assert_eq!(res, Err("No match at all."));
+        assert_eq!(res, Err (lexeme::LexemeErr::RegexErr
+                             (regex_backend::RegexLexemeErr::NoMatch)));
         let res = QConId::recognize("F..").unwrap();
         assert_eq!(res.span, vec![1]); // qualified, but not qconid!
         // the same thind as with F.g, it is not qconid, but it would be

@@ -13,7 +13,7 @@ use crate::lexeme::Lexeme;
 /// `lexeme -> qvarid | qconid | qvarsym | qconsym
 ///          | __literal__ | special | reservedop | reservedid
 
-fn gen_hs_token_stream(string_view : &str) -> Vec<token::Token>{
+fn gen_hs_token_stream(string_view : &str) -> Vec<token::Token> {
     // return value
     let mut token_stream : Vec<token::Token> = vec![];
     // how many characters away from the beginning of file
@@ -30,7 +30,7 @@ fn gen_hs_token_stream(string_view : &str) -> Vec<token::Token>{
     // these are single characters, makes sense to check them here
     let special = vec!['|', ',', ';', '[', ']', '`', '{', '}'];
 
-    let lexemes : Vec<fn(&str) -> Result::<token::Token, &'static str>> = vec![
+    let lexemes : Vec<fn(&str) -> Result::<token::Token, lexeme::LexemeErr>> = vec![
         // todo rethink the grammar one more time, esp. how identifiers exclude
         // reserved ids and ops - seems okay but ?
         mlcomment::MLComment::recognize,

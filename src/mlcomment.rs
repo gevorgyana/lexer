@@ -121,7 +121,7 @@ impl dfa::DFA for MLComment {
 
 impl lexeme::Lexeme for MLComment {
 
-    fn recognize(input : &str) -> Result<token::Token, &'static str> {
+    fn recognize(input : &str) -> Result<token::Token, lexeme::LexemeErr> {
         let mut rec = MLComment::new();
         let mut cols_in_curr_line = 0;
         let mut lines_span : Vec<u16> = vec![];
@@ -155,15 +155,14 @@ impl lexeme::Lexeme for MLComment {
                                       span : lines_span,
                                     }) // ! -> ()
                     } else if rec.in_fail_state() {
-                        return Err("") // ! -> ()
+                        return Err(lexeme::LexemeErr::AutomataErr("")) // ! -> ()
                     }
                 },
                 None => { panic!("Non-ascii character found") },
             }
         }
 
-        // no token has been recognized
-        Err("")
+        Err(lexeme::LexemeErr::AutomataErr("Not recognized."))
     }
 }
 

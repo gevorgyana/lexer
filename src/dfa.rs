@@ -11,3 +11,7 @@ pub trait DFA {
 
     fn in_fail_state(&self) -> bool;
 }
+
+pub enum DFALexemeErr {
+ //   DFA
+}
