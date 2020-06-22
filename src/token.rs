@@ -10,6 +10,9 @@ pub enum TokenType {
     QVarSym,
     QConSym,
     Special,
+    IntegerLiteral,
+    FloatLiteral,
+    CharLiteral,
 }
 
 #[derive(PartialEq, PartialOrd, Debug)]
