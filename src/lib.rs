@@ -1,6 +1,4 @@
-use std::fs;
-
-// declare modules and decide if they are public API
+// public API is marked as pub
 mod mlcomment;
 mod ascii;
 mod dfa;
@@ -12,34 +10,21 @@ mod qualified_identifiers;
 mod reserved;
 mod regex_backend;
 
-/// Every module has its `Error` enum that has that module-specific variants and
-/// also accepts variants from the modules that it delegates work to. Example
-mod a {
-    enum Error {
-        AFailedFirst,
-        AFailedSecond,
-        BFailed(b::Error),
-    }
+// the application follows the following conventions
+// for dealing with errors
+// https://github.com/gevorgyana/rust_conventions
 
-    fn work() -> Result<u8, Error> {
-        match b::work() {
-            Err(e) => {
-                Err(Error::BFailed(e))
-            },
-            Ok(val) => {
-                Ok(val)
-            }
-        }
-    }
+// This project uses the following non-obvious features of Rust:
+// raw string literals, r'\', those are literals that are not considered to
+// have escape sequences. Ex.: ```if r'\' == '\\' { true } else { false } ```
+// evaluates to true.
 
-    mod b {
-        pub enum Error {
-            BFailedFirst,
-            BFailedSecond,
-        }
-
-        pub fn work() -> Result<u8, Error> {
-            Ok(b'a')
-        }
-    }
-}
+// It works with ASCII by
+// - reading the input from file into a string. In Rust, a string is UTF-8-encoded
+// sequence of chaaracters (char), 1 char takes 4 bytes, so it is represented by
+// u32 type.
+// - then collecting the bytes it contains. One byte takes 8 bits and is represented
+// by u8.
+//
+// Of course, in case the file was UTF-8 encoded and had unicode characters, the
+// bytes are not guaranteed to correspond to what we call letters.
