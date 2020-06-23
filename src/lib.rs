@@ -12,7 +12,34 @@ mod qualified_identifiers;
 mod reserved;
 mod regex_backend;
 
-fn test() {
-    // read the whole file into a string and move on from there
-    fs::read_to_string("test.hs");
+/// Every module has its `Error` enum that has that module-specific variants and
+/// also accepts variants from the modules that it delegates work to. Example
+mod a {
+    enum Error {
+        AFailedFirst,
+        AFailedSecond,
+        BFailed(b::Error),
+    }
+
+    fn work() -> Result<u8, Error> {
+        match b::work() {
+            Err(e) => {
+                Err(Error::BFailed(e))
+            },
+            Ok(val) => {
+                Ok(val)
+            }
+        }
+    }
+
+    mod b {
+        pub enum Error {
+            BFailedFirst,
+            BFailedSecond,
+        }
+
+        pub fn work() -> Result<u8, Error> {
+            Ok(b'a')
+        }
+    }
 }
