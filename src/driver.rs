@@ -30,16 +30,16 @@ fn gen_hs_token_stream(string_view : &str) -> Vec<token::Token> {
     // these are single characters, makes sense to check them here
     let special = vec!['|', ',', ';', '[', ']', '`', '{', '}'];
 
-    let lexemes : Vec<fn(&str) -> Result::<token::Token, lexeme::LexemeErr>> = vec![
+    let lexemes : Vec<fn(&str) -> Result::<token::Token, lexeme::Error>> = vec![
         // todo rethink the grammar one more time, esp. how identifiers exclude
         // reserved ids and ops - seems okay but ?
         mlcomment::MLComment::recognize,
         reserved::ReservedId::recognize,
         reserved::ReservedOp::recognize,
-        qualified_identifiers::QConId::recognize,
-        qualified_identifiers::QVarId::recognize,
-        qualified_identifiers::QVarSym::recognize,
-        qualified_identifiers::QConSym::recognize,
+        qident::QConId::recognize,
+        qident::QVarId::recognize,
+        qident::QVarSym::recognize,
+        qident::QConSym::recognize,
     ];
 
     while buffer_offset < string_view.len() {

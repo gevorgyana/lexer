@@ -1,9 +1,9 @@
 use crate::token;
 use crate::lexeme;
-use crate::regex_backend;
+use crate::regex;
 
 use std::convert::TryInto;
-use crate::regex_backend::RegexLexeme;
+use crate::regex::RegexLexeme;
 
 /// ---- Rules ----
 /// qconid -> [modid .] conid
@@ -20,7 +20,7 @@ use crate::regex_backend::RegexLexeme;
 pub struct QConId {}
 
 /// DONE
-impl regex_backend::RegexLexeme for QConId {
+impl regex::RegexLexeme for QConId {
 
     fn expression() -> &'static str {
         r"(([A-Z][A-Za-z0-9']*\.)*[A-Z][A-Za-z0-9']*\.)?[A-Z][A-Za-z0-9']*"
@@ -33,7 +33,7 @@ impl regex_backend::RegexLexeme for QConId {
 pub struct QVarId {}
 
 /// DONE
-impl regex_backend::RegexLexeme for QVarId {
+impl regex::RegexLexeme for QVarId {
 
     fn needs_filtering() -> bool { true }
 
@@ -60,7 +60,7 @@ impl regex_backend::RegexLexeme for QVarId {
 
 pub struct QVarSym {}
 
-impl regex_backend::RegexLexeme for QVarSym {
+impl regex::RegexLexeme for QVarSym {
 
     fn needs_filtering() -> bool { true }
 
@@ -85,7 +85,7 @@ impl regex_backend::RegexLexeme for QVarSym {
 
 pub struct QConSym {}
 
-impl regex_backend::RegexLexeme for QConSym {
+impl regex::RegexLexeme for QConSym {
 
     fn needs_filtering() -> bool { true }
 
@@ -122,7 +122,7 @@ mod test {
         assert_eq!(res.span, vec![3]); // 3, not 5!
         let res = QConId::recognize(".");
         assert_eq!(res, Err (lexeme::LexemeErr::RegexErr
-                             (regex_backend::RegexLexemeErr::NoMatch)));
+                             (regex::RegexLexemeErr::NoMatch)));
         let res = QConId::recognize("A'.F'.f").unwrap();
         assert_eq!(res.span, vec![5]);
         let res = QConId::recognize("Aa2'.F2f'.f22").unwrap();
@@ -131,13 +131,13 @@ mod test {
         // examples from the report (2.4 Identifiers and Operators)
         let res = QConId::recognize("f.g");
         assert_eq!(res, Err (lexeme::LexemeErr::RegexErr
-                             (regex_backend::RegexLexemeErr::NoMatch)));
+                             (regex::RegexLexemeErr::NoMatch)));
         let res = QConId::recognize("F.g").unwrap();
         assert_eq!(res.span, vec![1]); // F, g is small, so the
         // expression is not qconid!
         let res = QConId::recognize("f..");
         assert_eq!(res, Err (lexeme::LexemeErr::RegexErr
-                             (regex_backend::RegexLexemeErr::NoMatch)));
+                             (regex::RegexLexemeErr::NoMatch)));
         let res = QConId::recognize("F..").unwrap();
         assert_eq!(res.span, vec![1]); // qualified, but not qconid!
         // the same thind as with F.g, it is not qconid, but it would be

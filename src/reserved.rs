@@ -2,7 +2,7 @@ use crate::*;
 
 pub struct ReservedId {}
 
-impl regex_backend::RegexLexeme for ReservedId {
+impl regex::RegexLexeme for ReservedId {
     fn expression() -> &'static str {
         r"(case|class|data|default|deriving|do|else|foreign|if|import|in|infix|infixl|infixr|instance|let|module|newtype|of|then|type|where|_)"
     }
@@ -14,7 +14,7 @@ impl regex_backend::RegexLexeme for ReservedId {
 
 pub struct ReservedOp {}
 
-impl regex_backend::RegexLexeme for ReservedOp {
+impl regex::RegexLexeme for ReservedOp {
     fn expression() -> &'static str {
         // the last part is tricky! \\ is for \, and \| is for |, so the last
         // symbol in this string is not a delimiter!

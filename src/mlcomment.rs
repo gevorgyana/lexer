@@ -121,7 +121,7 @@ impl dfa::DFA for MLComment {
 
 impl lexeme::Lexeme for MLComment {
 
-    fn recognize(input : &str) -> Result<token::Token, lexeme::LexemeErr> {
+    fn recognize(input : &str) -> Result<token::Token, lexeme::Error> {
         let mut rec = MLComment::new();
         let mut cols_in_curr_line = 0;
         let mut lines_span : Vec<u16> = vec![];
@@ -137,7 +137,7 @@ impl lexeme::Lexeme for MLComment {
                         _ => {
                             cols_in_curr_line += 1;
                         },
-                    }
+                    };
 
                     // if it is in a final state but there is still more
                     // to see? should not happen when the stack is 0, so what
@@ -153,16 +153,18 @@ impl lexeme::Lexeme for MLComment {
                                     { token_type :
                                       token::TokenType::MLComment,
                                       span : lines_span,
-                                    }) // ! -> ()
+                                    })
                     } else if rec.in_fail_state() {
-                        return Err(lexeme::LexemeErr::AutomataErr("")) // ! -> ()
+                        return Err(lexeme::Error::Automata(dfa::Error::IsInFailState))
                     }
                 },
-                None => { panic!("Non-ascii character found") },
-            }
+                None => {
+                    return Err(lexeme::Error::NonAsciiFound)
+                }
+            };
         }
 
-        Err(lexeme::LexemeErr::AutomataErr("Not recognized."))
+        Err(lexeme::Error::NotRecognized)
     }
 }
 

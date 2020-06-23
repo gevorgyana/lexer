@@ -6,9 +6,9 @@ mod token;
 mod lexeme;
 mod pda;
 mod driver;
-mod qualified_identifiers;
+mod qident;
 mod reserved;
-mod regex_backend;
+mod regex;
 
 // the application follows the following conventions
 // for dealing with errors

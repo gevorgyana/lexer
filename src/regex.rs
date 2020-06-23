@@ -1,10 +1,11 @@
-use super::*;
-
-use regex;
+// use super::*;
+use super::lexeme;
+use super::token;
+use regex as regex_backend;
 use std::convert::TryInto;
 
 #[derive(Debug, PartialEq)]
-pub enum RegexLexemeErr {
+pub enum Error {
     NoMatch,
     DistantMatch,
     InvalidExpression,
@@ -23,22 +24,22 @@ pub trait RegexLexeme {
     /// a regular expression that defines the matches that should be reported
     fn expression() -> &'static str;
 
-    fn recognize_raw_match(input : &str) -> Result<regex::Match, RegexLexemeErr> {
-        match regex::Regex::new(Self::expression()) {
+    fn recognize_raw_match(input : &str) -> Result<regex_backend::Match, Error> {
+        match regex_backend::Regex::new(Self::expression()) {
             Err(e) => {
-                Err(RegexLexemeErr::InvalidExpression)
+                Err(Error::InvalidExpression)
             },
             Ok(matcher) => {
                 match matcher.find(input) {
                     Some(position) => {
                         if (position.start() > 0) {
-                            Err(RegexLexemeErr::DistantMatch)
+                            Err(Error::DistantMatch)
                         } else {
                             Ok(position)
                         }
                     },
                     None => {
-                        Err(RegexLexemeErr::NoMatch)
+                        Err(Error::NoMatch)
                     }
                 }
             }
@@ -49,18 +50,16 @@ pub trait RegexLexeme {
 impl<T> lexeme::Lexeme for T
 where T : RegexLexeme
 {
-    fn recognize(input : &str) -> Result<token::Token, lexeme::LexemeErr> {
+    fn recognize(input : &str) -> Result<token::Token, lexeme::Error> {
         if <Self as RegexLexeme>::needs_filtering() {
             let reserved_id = <Self as RegexLexeme>
                 ::except_for();
 
-            if let Ok(position) = <Self as regex_backend::RegexLexeme>
+            if let Ok(position) = <Self as RegexLexeme>
                 ::recognize_raw_match(input) {
 
                 if reserved_id.contains(&position.as_str()) {
-                    Err(lexeme::LexemeErr::RegexErr(
-                        RegexLexemeErr::LexemeNotAllowed
-                    ))
+                    Err(lexeme::Error::FoundConflictingLexeme)
                 } else {
                     Ok(
                         token::Token {
@@ -74,7 +73,7 @@ where T : RegexLexeme
                     )
                 }
             } else {
-                Err(lexeme::LexemeErr::RegexErr(RegexLexemeErr::NoMatch))
+                Err(lexeme::Error::Regex(Error::NoMatch))
             }
         } else {
             match <Self as RegexLexeme>::recognize_raw_match(input) {
@@ -91,7 +90,7 @@ where T : RegexLexeme
                     )
                 },
                 Err(reason) => {
-                    Err(lexeme::LexemeErr::RegexErr(reason))
+                    Err(lexeme::Error::Regex(reason))
                 }
             }
         }
