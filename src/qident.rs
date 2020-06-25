@@ -151,13 +151,12 @@ mod test {
     #[test]
     fn qvarid() {
         let res = QVarId::recognize("f.g");
-
-        //assert_eq!(res, Err("Intercepted recognizer for QVarId failed"));
+	// assert_eq!(res, Err (lexeme::Error::Regex(regex::Error::NoMatch)));
         //let res = QVarId::recognize("F.g").unwrap();
         //assert_eq!(res.span, vec![0]); // F, g is small, so the
         // expression is not qconid!
-        let res = QVarId::recognize("f..");
-        //assert_eq!(res, Err("No match at all."));
+        //let res = QVarId::recognize("f..");
+        //assert_eq!(res, Err (lexeme::Error::Regex(regex::Error::NoMatch)));
         //let res = QVarId::recognize("F..").unwrap();
         //assert_eq!(res.span, vec![1]); // qualified, but not qconid!
         // the same thind as with F.g, it is not qconid, but it would be
