@@ -9,6 +9,10 @@ mod driver;
 mod qident;
 mod reserved;
 mod regex;
+mod reused;
+
+#[macro_use]
+extern crate lazy_static;
 
 // the application follows the following conventions
 // for dealing with errors

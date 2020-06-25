@@ -13,6 +13,11 @@ pub enum TokenType {
     IntegerLiteral,
     FloatLiteral,
     CharLiteral,
+    BigASCII,
+    LowASCII,
+    Digit,
+    Octit,
+    Hexit,
 }
 
 #[derive(PartialEq, PartialOrd, Debug)]
