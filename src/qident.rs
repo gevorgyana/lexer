@@ -1,3 +1,23 @@
+/// asterisk (*) on the left side of a derivation marks terminals
+/// ->    == what is on the left becomes what is on the right
+/// ( x ) == apply to what is inside the parenthesis
+/// w/o{} == exclude what is inside the brackets
+/// |     == alternation
+/// [a-z] == any character covered by the range
+/// { x } == any numer of repetitions
+/// x ?   == zero or one repetition
+/// x +   == one or more repetition
+///
+/// ---- Global rules ----
+/// qconid -> [modid .] conid
+/// qvarid -> [modid .] varid
+/// qvarsym -> [modid .] varsym
+///
+/// conid -> LARGE {SMALL | LARGE | DIGIT | '}
+/// varid -> ( SMALL {SMALL | LARGE | DIGIT | '} ) / reservedid
+/// varsym -> ( ( symbol ) / ':' { symbol } ) / ( reservedop | dashes )
+/// modid -> {conid .} conid
+
 use crate::token;
 use crate::lexeme;
 use crate::regex;
@@ -5,21 +25,8 @@ use crate::regex;
 use std::convert::TryInto;
 use crate::regex::RegexLexeme;
 
-/// ---- Rules ----
-/// qconid -> [modid .] conid
-/// conid -> LARGE {SMALL | LARGE | DIGIT | '}
-///
-/// qvarid -> [modid .] varid
-/// varid -> ( SMALL {SMALL | LARGE | DIGIT | '} ) / reservedid
-///
-/// qvarsym -> [modid .] varsym
-/// varsym -> ( ( symbol ) / ':' { symbol } ) / ( reservedop | dashes )
-///
-/// modid -> {conid .} conid
-
 pub struct QConId {}
 
-/// DONE
 impl regex::RegexLexeme for QConId {
 
     fn expression() -> &'static str {

@@ -28,3 +28,19 @@ mod regex;
 //
 // Of course, in case the file was UTF-8 encoded and had unicode characters, the
 // bytes are not guaranteed to correspond to what we call letters.
+
+
+// It is a convention to use raw string literals
+// when there is a need to specify the regex that
+// uses escape characters.
+// Example:
+// 1) r"\n"
+// 2) "\\n"
+// these two are equivalent, but in this project,
+// option 1 must be used.
+// Another example:
+// 1) r"foo"
+// 2) "foo"
+// Here, there is no escape character in any of the
+// options, and they are equivalent, so option 2
+// must be used.
