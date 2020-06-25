@@ -1,5 +1,12 @@
-/// asterisk (*) from the left marks terminals
-/// w/o{exclude} means exclusion
+/// asterisk (*) on the left side of a derivation marks terminals
+/// ->    == what is on the left becomes what is on the right
+/// ( x ) == apply to what is inside the parenthesis
+/// w/o{} == exclude what is inside the brackets
+/// |     == alternation
+/// [a-z] == any character covered by the range
+/// { x } == any numer of repetitions
+/// x ?   == zero or one repetition
+/// x +   == one or more repetition
 ///
 /// ---- Global rules ----
 /// literal -> integer | float | char | string

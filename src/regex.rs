@@ -1,6 +1,6 @@
-// use super::*;
 use super::lexeme;
 use super::token;
+
 use regex as regex_backend;
 use std::convert::TryInto;
 

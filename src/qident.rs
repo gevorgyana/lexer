@@ -121,8 +121,8 @@ mod test {
         let res = QConId::recognize("A.F.f").unwrap();
         assert_eq!(res.span, vec![3]); // 3, not 5!
         let res = QConId::recognize(".");
-        assert_eq!(res, Err (lexeme::LexemeErr::RegexErr
-                             (regex::RegexLexemeErr::NoMatch)));
+        assert_eq!(res, Err (lexeme::Error::Regex
+                             (regex::Error::NoMatch)));
         let res = QConId::recognize("A'.F'.f").unwrap();
         assert_eq!(res.span, vec![5]);
         let res = QConId::recognize("Aa2'.F2f'.f22").unwrap();
@@ -130,14 +130,14 @@ mod test {
 
         // examples from the report (2.4 Identifiers and Operators)
         let res = QConId::recognize("f.g");
-        assert_eq!(res, Err (lexeme::LexemeErr::RegexErr
-                             (regex::RegexLexemeErr::NoMatch)));
+        assert_eq!(res, Err (lexeme::Error::Regex
+                             (regex::Error::NoMatch)));
         let res = QConId::recognize("F.g").unwrap();
         assert_eq!(res.span, vec![1]); // F, g is small, so the
         // expression is not qconid!
         let res = QConId::recognize("f..");
-        assert_eq!(res, Err (lexeme::LexemeErr::RegexErr
-                             (regex::RegexLexemeErr::NoMatch)));
+        assert_eq!(res, Err (lexeme::Error::Regex
+                             (regex::Error::NoMatch)));
         let res = QConId::recognize("F..").unwrap();
         assert_eq!(res.span, vec![1]); // qualified, but not qconid!
         // the same thind as with F.g, it is not qconid, but it would be
