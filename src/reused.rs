@@ -12,7 +12,7 @@ struct BigASCII {}
 
 impl regex::RegexLexeme for BigASCII {
     fn expression() -> &'static str {
-        "[A-Z]"
+        "A-Z"
     }
 
     fn token_type() -> token::TokenType {
@@ -24,7 +24,7 @@ struct LowASCII {}
 
 impl regex::RegexLexeme for LowASCII {
     fn expression() -> &'static str {
-        "[a-z]"
+        "a-z"
     }
 
     fn token_type() -> token::TokenType {
@@ -36,7 +36,7 @@ struct Digit {}
 
 impl regex::RegexLexeme for Digit {
     fn expression() -> &'static str {
-        "[0-9]"
+        "0-9"
     }
 
     fn token_type() -> token::TokenType {
@@ -47,8 +47,9 @@ impl regex::RegexLexeme for Digit {
 struct Octit {}
 
 impl regex::RegexLexeme for Octit {
+
     fn expression() -> &'static str {
-        "[0-7]"
+        "0-7"
     }
 
     fn token_type() -> token::TokenType {
@@ -58,31 +59,36 @@ impl regex::RegexLexeme for Octit {
 
 struct Hexit {}
 
-impl Hexit {
-
-    fn prepare() -> &'static str {
-        lazy_static! {
-            static ref expr : String = std::format!("[A-Fa-f{digit}]",
-                                                           digit = <Digit
-                                                           as regex::RegexLexeme>
-                                                           ::expression());
-        }
-        // *expr evaluates to the static String value, then & takes a view on it,
-        // the whole expression is calculated once during the whole runtine, and
-        // this is brilliant! see this thread
-        // https://users.rust-lang.org/t/how-to-avoid-recalculating-a-formatted-string-at-runtime/44895/7
-        &*expr
-    }
-
-}
-
 impl regex::RegexLexeme for Hexit {
 
     fn expression() -> &'static str {
-        Self::prepare()
+        /*
+               lazy_static! {
+                   static ref expr : String = std::format!("[A-Fa-f{digit}]",
+                                                           digit = <Digit
+                                                           as regex::RegexLexeme>
+                                                           ::expression());
+         */
+        "sf"
+
+        // *expr evaluates to the static String value, then & takes a view on it,
+        // the whole expression is calculated once during the whole runtime, and
+        // this is brilliant! see this thread
+        // https://users.rust-lang.org/t/how-to-avoid-recalculating-a-formatted-string-at-runtime/44895/7
+
+        //&*expr
     }
 
     fn token_type() -> token::TokenType {
         token::TokenType::Hexit
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    #[test]
+    fn foo() {
+        assert_eq!(Hexit::prepare(), "A-Fa-f0-9");
     }
 }

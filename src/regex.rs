@@ -47,6 +47,13 @@ pub trait RegexLexeme {
     }
 }
 
+pub trait CharacterGroup : RegexLexeme {
+    fn expression() -> &'static str {
+        static LAZY: ::lazy_static::lazy::Lazy<String> = ::lazy_static::lazy::Lazy::INIT;
+        &*LAZY.get(|| { format!("{}", <Self as RegexLexeme>::expression() )})
+    }
+}
+
 impl<T> lexeme::Lexeme for T
 where T : RegexLexeme
 {
