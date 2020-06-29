@@ -31,7 +31,12 @@ impl regex::RegexLexeme for Octit {
 
 struct Hexit {}
 impl regex::RegexLexeme for Hexit {
-    fn expression() -> &'static str { format!("[A-Fa-f{}]", "value") }
+    fn expression() -> &'static str {
+        lazy_static!(
+            static ref expr : String = format!("A-Fa-f{}", "");
+        );
+        &*expr
+    }
     fn token_type() -> token::TokenType { token::TokenType::Hexit }
 }
 

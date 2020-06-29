@@ -1,3 +1,6 @@
+#[macro_use]
+extern crate lazy_static;
+
 // public API is marked as pub
 mod mlcomment;
 mod ascii;
