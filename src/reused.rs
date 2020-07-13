@@ -1,6 +1,7 @@
-/// This file contiains terminals used for recognizing lexemes in a Haskell program.
-/// They may be implemented with simple automata or regular expressions that do the
-/// same thing under the hood. Nothing more than regex is needed.
+/// This file contiains terminals used for recognizing lexemes in a
+/// Haskell program. They may be implemented with simple automata or
+/// regular expressions that do the same thing under the hood. Nothing
+/// more than regex is needed.
 
 use super::regex;
 use super::token;
@@ -32,10 +33,10 @@ impl regex::RegexLexeme for Octit {
 struct Hexit {}
 impl regex::RegexLexeme for Hexit {
     fn expression() -> &'static str {
-        lazy_static!(
-            static ref expr : String = format!("A-Fa-f{}", "");
-        );
-        &*expr
+        static LAZY: ::lazy_static::lazy::Lazy<String> =
+            ::lazy_static::lazy::Lazy::INIT;
+        &*LAZY.get(|| { format!("A-Fa-f{}",
+                                <Digit as regex::RegexLexeme>::expression()) })
     }
     fn token_type() -> token::TokenType { token::TokenType::Hexit }
 }
@@ -43,8 +44,13 @@ impl regex::RegexLexeme for Hexit {
 #[cfg(test)]
 mod test {
     use super::*;
+    use crate::regex;
     #[test]
     fn foo() {
-        //assert_eq!(Hexit::prepare(), "A-Fa-f0-9");
+        // first test the dependant type
+        assert_eq!("0-9", <Digit as regex::RegexLexeme>::expression());
+        assert_eq!("[0-9]", <Digit as regex::CharacterGroup>::expression());
+        assert_eq!(<Hexit as regex::RegexLexeme>::expression(), "A-Fa-f0-9");
+        assert_eq!(<Hexit as regex::CharacterGroup>::expression(), "[A-Fa-f0-9]");
     }
 }
