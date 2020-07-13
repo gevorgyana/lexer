@@ -1,6 +1,11 @@
 use super::lexeme;
 use super::token;
 
+use std::collections::HashMap;
+use std::sync::Mutex;
+use std::any::TypeId;
+use once_cell::sync::OnceCell;
+
 use regex as regex_backend;
 use std::convert::TryInto;
 
@@ -14,8 +19,8 @@ pub enum Error {
 
 pub trait RegexLexeme {
 
-    /// Activates the usage of except_for() filtering,
-    /// false by default.
+    /// Activates the usage of except_for() filtering, false by
+    /// default.
     fn needs_filtering() -> bool { false }
 
     /// A regular expression that defines the matches that must be
@@ -49,26 +54,47 @@ pub trait RegexLexeme {
     }
 }
 
-pub trait CharacterGroup : RegexLexeme {
+pub trait CharacterGroup : RegexLexeme
+    where Self : 'static
+{
 
     /// Wraps an inner expression into a pair of square brackets '[]'.
     /// Calculates the internal string that is returned by `format!`
     /// only once, returns a view on it that has static lifetime.
-    fn expression() -> &'static str;
-}
-
-impl <T : RegexLexeme> CharacterGroup for T {
     fn expression() -> &'static str {
-        static LAZY: ::lazy_static::lazy::Lazy<String>
-            = ::lazy_static::lazy::Lazy::INIT;
-        &*LAZY.get( || { format!("[{}]", <Self as RegexLexeme>::expression()) } )
+        static value : OnceCell<
+                Mutex<HashMap<TypeId, &'static str>>>
+            = OnceCell::new();
+
+        let _: &'static Mutex<HashMap<TypeId, &'static str>> =
+            value.get_or_init(|| {
+                Mutex::new(HashMap::new())
+            });
+
+        let v: &'static str =
+            value
+            .get()
+            .unwrap()
+            .lock()
+            .unwrap()
+            .entry(TypeId::of::<Self>())
+            .or_insert_with(|| {
+                let string =
+                    format!("[{}]",
+                            <Self as RegexLexeme>::expression());
+                Box::leak(string.into_boxed_str())
+            });
+        v
     }
 }
 
-/// TODO Find a way to implement Maybe monad. This error handling
-/// is bloat. The general pattern is `try to compute; if not possible,
-/// wrap the internal error in this more general enum, and return the
-/// result`. Nested ifs become clumsy.
+impl <T : RegexLexeme + 'static> CharacterGroup for T {}
+
+/// TODO Find a way to implement Maybe monad. The general pattern is
+/// `try to compute; if not possible, wrap the internal error in this
+/// more general enum, and return the result`. Nested ifs become
+/// clumsy.
+
 impl<T> lexeme::Lexeme for T
 where T : RegexLexeme
 {

@@ -38,6 +38,7 @@ impl regex::RegexLexeme for Hexit {
         &*LAZY.get(|| { format!("A-Fa-f{}",
                                 <Digit as regex::RegexLexeme>::expression()) })
     }
+
     fn token_type() -> token::TokenType { token::TokenType::Hexit }
 }
 
