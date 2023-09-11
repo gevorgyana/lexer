@@ -4,7 +4,7 @@ pub struct ReservedId {}
 
 impl regex::RegexLexeme for ReservedId {
     fn expression() -> &'static str {
-        r"(case|class|data|default|deriving|do|else|foreign|if|import|in|infix|infixl|infixr|instance|let|module|newtype|of|then|type|where|_)"
+        r"(as|case|class|data|default|deriving|do|else|foreign|if|import|in|infix|infixl|infixr|instance|let|module|newtype|of|qualified|then|type|where|_)"
     }
 
     fn token_type() -> token::TokenType {
