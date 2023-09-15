@@ -46,12 +46,12 @@ impl regex::RegexLexeme for QVarId {
 
     fn except_for() -> &'static str {
         /*
-        vec!["case", "class", "data",
-             "default", "deriving", "do",
-             "else", "foreign", "if", "import",
-             "in", "infix", "infixl", "infixr",
-             "instance", "let", "module", "newtype",
-             "of", "then", "type", "where"]
+        vec!["as", "case", "class", "data",
+             "default", "deriving", "do", "else",
+             "foreign", "if", "import", "in",
+             "infix", "infixl", "infixr", "instance",
+             "let", "module", "newtype", "of",
+             "qualified", "then", "type", "where"]
          */
         r""
     }
